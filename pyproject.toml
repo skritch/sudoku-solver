@@ -7,10 +7,12 @@ authors = [
     { name = "skritch", email = "sam.kritch@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "z3-solver",
+]
 
 [project.scripts]
-sudokus = "sudokus:main"
+sudoku = "sudokus.solve:main"
 
 [build-system]
 requires = ["uv_build>=0.12.19,<0.13.0"]

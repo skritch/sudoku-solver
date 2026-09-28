@@ -1,31 +1,23 @@
-from z3 import And, Distinct, Int, Sum
+from ortools.sat.python import cp_model
 
 A, B, C, D, E, F, G, H, I = 1, 2, 3, 4, 5, 6, 7, 8, 9
 
 
-def add_standard_rules(s, x):
-    for r in range(1, 10):
-        for c in range(1, 10):
-            s.add(And(x[r - 1][c - 1] >= 1, x[r - 1][c - 1] <= 9))
-    for r in range(1, 10):
-        s.add(Distinct([x[r - 1][c - 1] for c in range(1, 10)]))
-    for c in range(1, 10):
-        s.add(Distinct([x[r - 1][c - 1] for r in range(1, 10)]))
+def add_standard_rules(m, x):
+    for r in range(9):
+        m.add_all_different(x[r])
+    for c in range(9):
+        m.add_all_different([x[r][c] for r in range(9)])
     for br in range(3):
         for bc in range(3):
-            cells = [
-                x[r - 1][c - 1]
-                for r in range(br * 3 + 1, br * 3 + 4)
-                for c in range(bc * 3 + 1, bc * 3 + 4)
-            ]
-            s.add(Distinct(cells))
+            cells = [x[br * 3 + r][bc * 3 + c] for r in range(3) for c in range(3)]
+            m.add_all_different(cells)
 
 
-def equal_sum_cages(s, x, cages):
+def equal_sum_cages(m, x, cages):
     """All cages sum to the same unknown value."""
-    cage_sum = Int(f"cage_sum_{hash(tuple(tuple(c) for c in cages))}")
     min_sum = max(sum(range(1, len(cage) + 1)) for cage in cages)
     max_sum = min(sum(range(10 - len(cage), 10)) for cage in cages)
-    s.add(And(cage_sum >= min_sum, cage_sum <= max_sum))
+    cage_sum = m.new_int_var(min_sum, max_sum, f"cage_sum_{hash(tuple(tuple(c) for c in cages))}")
     for cage in cages:
-        s.add(Sum([x[r - 1][c - 1] for r, c in cage]) == cage_sum)
+        m.add(sum(x[r - 1][c - 1] for r, c in cage) == cage_sum)

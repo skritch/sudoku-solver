@@ -3,7 +3,7 @@ import importlib
 import sys
 from pathlib import Path
 
-from z3 import Int, Solver, sat, unsat
+from z3 import Int, Then, With, sat, unknown, unsat
 
 from sudokus.lib import add_standard_rules
 
@@ -29,7 +29,8 @@ def main():
     board = _load_board(args.board)
 
     x = _make_grid()
-    s = Solver()
+    tactic = Then(With("simplify", arith_lhs=True, som=True), "propagate-values", "solve-eqs", "smt")
+    s = tactic.solver()
     add_standard_rules(s, x)
 
     for (r, c), value in getattr(board, "GIVENS", {}).items():
@@ -43,6 +44,9 @@ def main():
     if result == unsat:
         print("No solution.", file=sys.stderr)
         sys.exit(1)
+    elif result == unknown:
+        print(f"Solver gave up: {s.reason_unknown()}", file=sys.stderr)
+        sys.exit(2)
     elif result != sat:
         sys.exit(1)
 

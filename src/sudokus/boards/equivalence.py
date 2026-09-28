@@ -2,11 +2,6 @@
 
 from sudokus.lib import *
 
-# GIVENS = {
-#     (A, 1): 5,
-#     (A, 2): 3,
-#     (B, 1): 6,
-# }
 
 CAGES = [
     [(A, 1), (B, 1), (B, 2)],
